@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>過勞量表</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0F2EB;--surface:#FFF;--ink:#1A221A;--muted:#68706A;--line:#D2D7C9;
+  --accent:#2D5F45;--accent-soft:#D2E5DA;--accent-ink:#FFF;
+  --usr:#2D5F45;--usr-ink:#FFF;
+  --severe:#8F2E1C;--good:#2D5F45;--mid:#8A6520;
+}
+/* dark mode disabled */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;margin:0;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:"Noto Sans TC","PingFang TC",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+
+/* ── header ── */
+.hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;
+  padding-top:max(14px,env(safe-area-inset-top));
+  background:var(--surface);border-bottom:1px solid var(--line);
+  flex-shrink:0;
+}
+.hdr-left{display:flex;align-items:center;gap:10px;}
+.hdr-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--accent-soft);display:flex;align-items:center;justify-content:center;
+}
+.hdr-avatar svg{width:16px;height:16px;stroke:var(--accent);stroke-width:2;fill:none;}
+.hdr-name{font-size:14px;font-weight:600;}
+.hdr-sub{font-size:11.5px;color:var(--muted);}
+.prog-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.prog-label{font-size:11px;color:var(--muted);}
+.prog-track{width:72px;height:3px;background:var(--line);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--accent);border-radius:99px;width:0%;transition:width 400ms cubic-bezier(.4,0,.2,1);}
+
+/* ── chat ── */
+.chat{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:16px 14px max(20px,env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;
+  scroll-behavior:smooth;
+}
+
+/* ── 訊息 ── */
+.msg-row{display:flex;align-items:flex-end;gap:8px;margin-bottom:6px;}
+.msg-row.sys{align-self:flex-start;max-width:85%;}
+.msg-row.usr{align-self:flex-end;flex-direction:row-reverse;max-width:78%;}
+.avatar{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  background:var(--accent-soft);display:flex;align-items:center;justify-content:center;
+}
+.avatar svg{width:13px;height:13px;stroke:var(--accent);stroke-width:2;fill:none;}
+.bubble{
+  padding:10px 14px;border-radius:18px;font-size:15px;line-height:1.6;
+}
+.sys .bubble{
+  background:var(--surface);color:var(--ink);
+  border:1px solid var(--line);
+  border-bottom-left-radius:4px;
+}
+.usr .bubble{
+  background:var(--usr);color:var(--usr-ink);
+  border-bottom-right-radius:4px;
+}
+
+/* 打字 */
+.typing-row{display:flex;align-items:flex-end;gap:8px;margin-bottom:6px;}
+.typing-bubble{
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:18px;border-bottom-left-radius:4px;
+  padding:12px 16px;display:flex;gap:4px;align-items:center;
+}
+.typing-bubble span{
+  width:7px;height:7px;background:var(--muted);border-radius:50%;
+  animation:blink 1.1s infinite ease-in-out;
+}
+.typing-bubble span:nth-child(2){animation-delay:.18s;}
+.typing-bubble span:nth-child(3){animation-delay:.36s;}
+@keyframes blink{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
+
+/* ── 選項群（跟在泡泡後） ── */
+.opts-block{
+  margin:6px 0 10px 36px;
+  display:flex;flex-direction:column;gap:7px;
+  animation:fadeUp 280ms cubic-bezier(.16,1,.3,1);
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.opt-btn{
+  font-family:inherit;font-size:14.5px;font-weight:500;
+  color:var(--ink);background:var(--surface);
+  border:1.5px solid var(--line);border-radius:20px;
+  padding:12px 18px;cursor:pointer;text-align:left;
+  transition:border-color 120ms,background 120ms,transform 80ms;
+  line-height:1.4;
+}
+.opt-btn:active{transform:scale(.97);}
+.opt-btn:hover{border-color:var(--accent);background:var(--accent-soft);}
+
+/* 兩欄 grid 選項 */
+.opts-block.g2{display:grid;grid-template-columns:1fr 1fr;}
+
+/* 量表選項（全寬直列） */
+.scale-block{
+  margin:6px 0 10px 36px;
+  display:flex;flex-direction:column;gap:6px;
+  animation:fadeUp 280ms cubic-bezier(.16,1,.3,1);
+}
+.scale-btn{
+  font-family:inherit;font-size:14.5px;font-weight:500;
+  color:var(--ink);background:var(--surface);
+  border:1.5px solid var(--line);border-radius:20px;
+  padding:12px 16px;cursor:pointer;text-align:left;
+  display:flex;align-items:center;gap:12px;
+  transition:border-color 120ms,background 120ms,transform 80ms;
+}
+.scale-btn:active{transform:scale(.98);}
+.scale-btn:hover{border-color:var(--accent);background:var(--accent-soft);}
+.scale-num{
+  width:24px;height:24px;border-radius:50%;
+  background:var(--bg);border:1px solid var(--line);
+  font-size:12px;font-weight:600;color:var(--muted);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+
+/* 文字輸入列 */
+.input-row{
+  margin:6px 0 10px 36px;
+  display:flex;gap:8px;align-items:center;
+  animation:fadeUp 280ms cubic-bezier(.16,1,.3,1);
+}
+.input-row input{
+  flex:1;min-width:0;
+  font-family:inherit;font-size:16px;color:var(--ink);
+  background:var(--surface);border:1.5px solid var(--line);border-radius:12px;
+  padding:11px 14px;outline:none;
+  transition:border-color 150ms;
+}
+.input-row input:focus{border-color:var(--accent);}
+.send-btn{
+  flex-shrink:0;width:44px;height:44px;
+  background:var(--accent);border:none;border-radius:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity 120ms;
+}
+.send-btn:disabled{opacity:.35;cursor:not-allowed;}
+.send-btn svg{width:17px;height:17px;stroke:var(--accent-ink);stroke-width:2.2;fill:none;}
+.input-hint{
+  margin:2px 0 8px 36px;font-size:12.5px;min-height:18px;
+  transition:color .15s;
+}
+
+/* 滿意度 */
+.rating-block{
+  margin:6px 0 10px 36px;
+  display:flex;flex-direction:column;gap:6px;
+  animation:fadeUp 280ms cubic-bezier(.16,1,.3,1);
+}
+.rating-row{display:flex;gap:7px;}
+.rating-btn{
+  flex:1;aspect-ratio:1;
+  font-family:inherit;font-size:16px;font-weight:700;
+  color:var(--ink);background:var(--surface);
+  border:1.5px solid var(--line);border-radius:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color 120ms,background 120ms,transform 80ms;
+}
+.rating-btn:active{transform:scale(.95);}
+.rating-btn:hover{border-color:var(--accent);background:var(--accent-soft);}
+.rating-labels{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);}
+
+/* 結果卡 */
+.result-wrap{
+  display:flex;align-items:flex-end;gap:8px;margin-bottom:6px;
+}
+.result-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:22px;
+  border-bottom-left-radius:6px;
+  overflow:hidden;flex:1;max-width:85%;
+  animation:fadeUp 280ms cubic-bezier(.16,1,.3,1);
+}
+.score-grid{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line);}
+.score-cell{padding:16px 12px;text-align:center;}
+.score-cell:first-child{border-right:1px solid var(--line);}
+.score-lbl{font-size:11px;color:var(--muted);margin-bottom:8px;}
+.score-num{font-size:34px;font-weight:700;line-height:1;}
+.score-band{display:inline-block;margin-top:8px;font-size:11.5px;border-radius:20px;padding:3px 12px;border:1.5px solid;}
+.score-divider{height:1px;background:var(--line);}
+.score-desc{padding:12px 16px;font-size:13px;line-height:1.8;border-bottom:1px solid var(--line);}
+.score-desc:last-child{border-bottom:none;}
+
+/* 修改按鈕 */
+.undo-btn{
+  align-self:center;
+  display:flex;align-items:center;gap:5px;
+  font-family:inherit;font-size:12px;color:var(--muted);
+  background:none;border:1px solid var(--line);border-radius:99px;
+  padding:5px 12px;cursor:pointer;margin:2px 0 8px;
+  transition:background 120ms;
+}
+.undo-btn svg{width:12px;height:12px;stroke:var(--muted);stroke-width:2;fill:none;}
+.undo-btn:hover{background:var(--line);}
+
+/* 單位選擇 */
+.unit-cats{
+  margin:6px 0 10px 36px;
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  animation:fadeUp 280ms cubic-bezier(.16,1,.3,1);
+}
+.unit-cat-btn{
+  font-family:inherit;font-size:13.5px;font-weight:500;color:var(--ink);
+  background:var(--surface);border:1.5px solid var(--line);border-radius:20px;
+  padding:14px 14px;cursor:pointer;text-align:left;
+  display:flex;flex-direction:column;gap:7px;
+  transition:border-color 120ms,background 120ms;
+}
+.unit-cat-btn:hover{border-color:var(--accent);background:var(--accent-soft);}
+.unit-cat-btn svg{width:20px;height:20px;stroke:var(--accent);stroke-width:1.8;fill:none;}
+.unit-subs{
+  margin:0 0 10px 36px;
+  display:flex;flex-direction:column;gap:0;
+  animation:fadeUp 280ms cubic-bezier(.16,1,.3,1);
+}
+.unit-back{
+  display:flex;align-items:center;gap:5px;
+  font-family:inherit;font-size:13px;color:var(--muted);
+  background:none;border:none;cursor:pointer;padding:0 0 8px;
+}
+.unit-back svg{width:13px;height:13px;stroke:var(--muted);stroke-width:2;fill:none;}
+.unit-sub-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;max-height:44vh;overflow-y:auto;padding-bottom:8px;}
+
+/* 分隔文字 */
+.divider-text{
+  align-self:center;font-size:12px;color:var(--muted);
+  background:var(--bg);padding:0 10px;margin:6px 0;
+  position:relative;
+}
+.divider-text::before,.divider-text::after{
+  content:'';position:absolute;top:50%;width:40px;height:1px;background:var(--line);
+}
+.divider-text::before{right:100%;}
+.divider-text::after{left:100%;}
+
+/* ── 內嵌輸入泡泡 ── */
+.inline-bubble{
+  display:flex;flex-direction:column;
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:22px;border-bottom-left-radius:6px;
+  max-width:86%;overflow:hidden;
+  animation:fadeUp 280ms cubic-bezier(.16,1,.3,1);
+}
+.inline-bubble-q{
+  font-size:15px;line-height:1.6;padding:11px 16px 9px;color:var(--ink);
+}
+.inline-bubble-sep{height:1px;background:var(--line);}
+.inline-bubble-input{
+  display:flex;align-items:center;
+}
+.inline-bubble-input input{
+  flex:1;min-width:0;
+  font-family:inherit;font-size:15px;color:var(--ink);
+  background:transparent;border:none;outline:none;
+  padding:11px 14px;
+}
+.inline-bubble-input input::placeholder{color:var(--muted);}
+.inline-send{
+  width:44px;height:44px;margin:4px 8px 4px 0;
+  background:var(--accent);border:none;border-radius:14px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;min-width:44px;
+  transition:opacity 120ms,transform 80ms;
+}
+.inline-send:disabled{opacity:.3;cursor:not-allowed;}
+.inline-send:not(:disabled):active{transform:scale(.93);}
+.inline-send svg{width:18px;height:18px;stroke:var(--accent-ink);stroke-width:2.5;fill:none;}
+.inline-hint{
+  font-size:12px;padding:0 16px 9px;min-height:20px;
+  transition:color .15s;
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="hdr-avatar">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-3"/><path d="M9 12h6"/><path d="M9 16h4"/><path d="M9 8h6"/></svg>
+    </div>
+    <div>
+      <div class="hdr-name">過勞評估</div>
+      <div class="hdr-sub">健康管理系統</div>
+    </div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-label" id="progLabel"></div>
+    <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+  </div>
+</div>
+
+<div class="chat" id="chat"></div>
+
+<script>
+(function(){
+
+/* ── 資料 ── */
+var unitGroups={
+  '醫師 / 護理':{svg:'<svg viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>',items:["1.醫師(為恭)","2.醫師(宏仁)","3.護理部","4.護理部7F病房護理站","5.護理部7F產房護理站","6.護理部7F嬰兒室","7.護理部8F病房護理站","8.護理部9F病房護理站","9.護理部10F病房護理站","10.護理部11F病房護理站","11.護理部12F病房護理站","12.護理部15F病房護理站","13.護理部精神科一病房護理站","14.護理部精神科二病房護理站","15.護理部精神科三病房護理站","16.護理部精神科七病房護理站","17.護理部精神科八病房護理站","18.護理部日間病房","19.護理部手術室","20.護理部加護病房護理站","21.護理部急診室","22.護理部門診","23.護理部供應室","24.護理部專科護理師內科組","25.護理部專科護理師手術室組","26.護理部專科護理師外科組","27.護理部專科護理師兒科組","28.護理部專科護理師急診組","29.護理部專科護理師重症加護科組","30.護理部專科護理師婦產科組","31.護理部專科護理師精神科組"]},
+  '社區 / 長照':{svg:'<svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',items:["32.社區醫學部","33.社區健康科","34.個案管理科","35.長期照護科","36.居家護理所","37.護理之家","60.社區精神科"]},
+  '醫技 / 治療':{svg:'<svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v11m0 0H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-4m-6 0h6"/></svg>',items:["38.健檢中心一般健檢組","39.健檢中心外勞健檢組","40.腎臟內科","41.麻醉科護理組","42.生理檢查室","43.呼吸治療科","44.感染管制室","45.藥劑部","46.檢驗部","47.心臟內科心導管室","48.放射診斷科","49.放射腫瘤科","50.社會工作室","51.東興社會工作科","52.泌尿科碎石室","53.高壓氧治療中心","54.復健科","55.解剖病理科","56.營養科","57.臨床心理科","58.職能治療科","59.職能治療科庇護工場","76.急診部"]},
+  '行政 / 管理':{svg:'<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>',items:["61.院長室","62.經營服務中心","63.財務室","64.資訊室","65.醫事室","66.保險申報課","67.病歷管理課","68.計價課","69.總務室","70.工務課","71.庶務課","72.職業安全衛生室","73.醫療品質部","74.教學研究組","75.人力資源室","77.精神醫療中心行政課"]},
+  '宏仁診所':{svg:'<svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 12v6m-3-3h6"/></svg>',items:["78.宏仁診所放射組","79.宏仁診所門診","80.宏仁診所洗腎室","81.宏仁診所復健科","82.宏仁診所醫事組","83.宏仁診所藥局"]}
+};
+
+var pCols=[{t:'總是',v:100},{t:'常常',v:75},{t:'有時候',v:50},{t:'不常',v:25},{t:'從未或幾乎從未',v:0}];
+var uCols=[{t:'很嚴重',v:100},{t:'嚴重',v:75},{t:'有一些',v:50},{t:'輕微',v:25},{t:'非常輕微',v:0}];
+var rCols=[{t:'總是',v:0},{t:'常常',v:25},{t:'有時候',v:50},{t:'不常',v:75},{t:'從未或幾乎從未',v:100}];
+
+/* ── 狀態 ── */
+var ans={},ansVal={};
+var stepIndex=0;
+var unitCat=null;
+var NAME='';
+var timers=[];  // 追蹤所有 setTimeout，重置時一次清除
+
+/* ── 題目序列（動態）── */
+var STEPS=[
+  {id:'name',     type:'text',    q:'您好！請問您的姓名是？',              ph:'例：王小明'},
+  {id:'empId',    type:'text',    q:'請問您的工號是？',                           ph:'例：A140'},
+  {id:'birthday', type:'birthday',q:'請問您的生日？請用西元年填寫。',           ph:'例：1990/05/20'},
+  {id:'jobCat',   type:'choice',  q:'請問您的職類是？',                       opts:['醫師','護理','醫技','行政']},
+  {id:'jobGrade', type:'choice',  q:'請問您的職等是？',                             opts:['A01','901','801','701','605','601','501','401','303','302','301','203','202','201','0'],g2:true},
+  {id:'seniority',type:'choice',  q:'請問您的年資大約多久了？',                   opts:['1年以內','1–5年','6–10年','11–15年','16–20年','21–25年','26–30年','31–35年','36–40年','40年以上'],g2:true},
+  {id:'unit',     type:'unit',    q:'請問您目前的單位是？'},
+  {id:'_sep1',    type:'divider', text:'基本資料已收到，謝謝！接下來想請問幾個關於您近況的問題 😊'},
+  {id:'p1',type:'scale',q:'請問您最近常覺得疲勞嗎？',c:pCols},
+  {id:'p2',type:'scale',q:'請問您常覺得體力透支嗎？',c:pCols},
+  {id:'p3',type:'scale',q:'請問您情緒上有心力交瘁的感覺嗎？',c:pCols},
+  {id:'p4',type:'scale',q:'請問您會覺得「我快撐不下去了」嗎？',c:pCols},
+  {id:'p5',type:'scale',q:'請問您常覺得精疲力竭嗎？',c:pCols},
+  {id:'p6',type:'scale',q:'請問您會覺得虛弱、好像快生病了嗎？',c:pCols},
+  {id:'_sep2',    type:'divider', text:'再來幾題關於工作感受的問題，請放心如實填寫。'},
+  {id:'w1',type:'scale',q:'請問工作讓您覺得情緒上心力交瘁嗎？',c:uCols},
+  {id:'w2',type:'scale',q:'請問工作讓您覺得快要累垮了嗎？',c:uCols},
+  {id:'w3',type:'scale',q:'請問工作讓您感到挫折嗎？',c:uCols},
+  {id:'w4',type:'scale',q:'工作一整天後，請問您覺得精疲力竭嗎？',c:pCols},
+  {id:'w5',type:'scale',q:'上班前只要想到要工作一整天，請問您會覺得沒力嗎？',c:pCols},
+  {id:'w6',type:'scale',q:'請問您上班時會覺得每一刻都很難熬嗎？',c:pCols},
+  {id:'w7',type:'scale',q:'不工作的時候，請問您有足夠精力陪家人或朋友嗎？',c:rCols},
+  {id:'sat',type:'rating',q:'最後，請問您對這個平台的使用滿意度是？'}
+];
+
+var scoreStepIds=['p1','p2','p3','p4','p5','p6','w1','w2','w3','w4','w5','w6','w7','sat'];
+var totalQ=STEPS.filter(function(s){return s.type!=='divider';}).length;
+
+/* ── DOM ── */
+var chat=document.getElementById('chat');
+var progFill=document.getElementById('progFill');
+var progLabel=document.getElementById('progLabel');
+
+/* ── 進度（排除 divider）── */
+function updateProg(){
+  var answered=Object.keys(ans).length;
+  var pct=Math.round((answered/totalQ)*100);
+  progFill.style.width=pct+'%';
+  progLabel.textContent=answered>0?(answered+' / '+totalQ):'';
+}
+
+function scrollBottom(){chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'});}
+
+/* ── 系統泡泡 ── */
+function safeTimeout(fn,ms){var t=setTimeout(fn,ms);timers.push(t);return t;}
+function clearAllTimers(){timers.forEach(function(t){clearTimeout(t);});timers=[];}
+
+function sysBubble(html, delay, cb, stepId){
+  // 打字指示器
+  var tr=document.createElement('div');tr.className='typing-row';
+  if(stepId)tr.setAttribute('data-step',stepId);
+  var av=document.createElement('div');av.className='avatar';
+  av.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-3"/><path d="M9 12h6"/><path d="M9 16h4"/><path d="M9 8h6"/></svg>';
+  var tb=document.createElement('div');tb.className='typing-bubble';
+  tb.innerHTML='<span></span><span></span><span></span>';
+  tr.appendChild(av);tr.appendChild(tb);
+  chat.appendChild(tr);scrollBottom();
+  safeTimeout(function(){
+    tr.remove();
+    var row=document.createElement('div');row.className='msg-row sys';
+    if(stepId)row.setAttribute('data-step',stepId);
+    row.innerHTML='<div class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-3"/><path d="M9 12h6"/><path d="M9 16h4"/><path d="M9 8h6"/></svg></div><div class="bubble">'+html+'</div>';
+    chat.appendChild(row);scrollBottom();
+    if(cb)cb();
+  },delay||480);
+}
+
+/* ── 使用者泡泡 ── */
+function usrBubble(text, stepId){
+  var row=document.createElement('div');row.className='msg-row usr';
+  row.setAttribute('data-step',stepId);
+  row.innerHTML='<div class="bubble">'+text+'</div>';
+  chat.appendChild(row);
+
+  // 修改提示（只保留最新一個）
+  chat.querySelectorAll('.undo-btn').forEach(function(b){b.remove();});
+  if(stepIndex>0){
+    var ub=document.createElement('button');ub.className='undo-btn';
+    ub.setAttribute('data-step',stepId);
+    ub.innerHTML='<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>修改這個答案';
+    ub.addEventListener('click',function(){goBackTo(stepId);});
+    chat.appendChild(ub);
+  }
+  scrollBottom();
+}
+
+/* ── 分隔提示 ── */
+function dividerText(text, cb){
+  safeTimeout(function(){
+    var d=document.createElement('div');d.className='divider-text';d.textContent=text;
+    chat.appendChild(d);scrollBottom();
+    if(cb)cb();
+  },300);
+}
+
+/* ── 返回修改 ── */
+function goBackTo(targetId){
+  var targetIdx=STEPS.findIndex(function(s){return s.id===targetId;});
+  if(targetIdx<0)return;
+
+  clearAllTimers();
+
+  // 清掉 targetIdx 之後所有 DOM 元素
+  var toRemove=[];
+  chat.querySelectorAll('[data-step]').forEach(function(el){
+    var id=el.getAttribute('data-step');
+    var idx=STEPS.findIndex(function(s){return s.id===id;});
+    if(idx>=targetIdx)toRemove.push(el);
+  });
+  toRemove.forEach(function(el){el.remove();});
+  chat.querySelectorAll('.undo-btn,.opts-block,.scale-block,.input-row,.input-hint,.rating-block,.unit-cats,.unit-subs,.result-card,.result-wrap,.divider-text,.typing-row,.inline-bubble').forEach(function(el){el.remove();});
+
+  // 清掉答案
+  for(var i=targetIdx;i<STEPS.length;i++){
+    delete ans[STEPS[i].id];
+    delete ansVal[STEPS[i].id];
+  }
+  stepIndex=targetIdx;
+  unitCat=null;
+  updateProg();
+  safeTimeout(function(){askStep(targetIdx);},200);
+}
+
+/* ── 問一題 ── */
+function askStep(si){
+  if(si>=STEPS.length){showResult();return;}
+  var step=STEPS[si];
+  stepIndex=si;
+
+  if(step.type==='divider'){
+    dividerText(step.text,function(){
+      stepIndex=si+1;
+      askStep(si+1);
+    });
+    return;
+  }
+
+  // 問句帶入名字（第 4 題之後）
+  var q=step.q;
+  if(NAME && si>3 && step.type==='scale'){
+    // 不每題都帶，偶爾帶，讓對話自然
+  }
+
+  if(step.type==='text'||step.type==='birthday'){
+    inlineBubble(step,si);
+  } else {
+    sysBubble(q, 440, function(){
+      renderInput(step,si);
+    }, step.id);
+  }
+}
+
+
+/* ── 內嵌輸入泡泡（文字題用）── */
+function inlineBubble(step,si){
+  // 打字指示器
+  var tr=document.createElement('div');tr.className='typing-row';
+  var av0=document.createElement('div');av0.className='avatar';
+  av0.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-3"/><path d="M9 12h6"/><path d="M9 16h4"/><path d="M9 8h6"/></svg>';
+  var tb=document.createElement('div');tb.className='typing-bubble';
+  tb.innerHTML='<span></span><span></span><span></span>';
+  tr.appendChild(av0);tr.appendChild(tb);
+  chat.appendChild(tr);scrollBottom();
+
+  safeTimeout(function(){
+    tr.remove();
+
+    // 包裝列（avatar + inline-bubble）
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:flex-end;gap:8px;margin-bottom:6px;';
+    row.setAttribute('data-step',step.id);
+
+    var av=document.createElement('div');av.className='avatar';
+    av.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-3"/><path d="M9 12h6"/><path d="M9 16h4"/><path d="M9 8h6"/></svg>';
+
+    var bubble=document.createElement('div');bubble.className='inline-bubble';
+
+    // 問句
+    var qDiv=document.createElement('div');qDiv.className='inline-bubble-q';qDiv.textContent=step.q;
+    bubble.appendChild(qDiv);
+
+    // 分隔線
+    var sep=document.createElement('div');sep.className='inline-bubble-sep';
+    bubble.appendChild(sep);
+
+    // 輸入列
+    var inputWrap=document.createElement('div');inputWrap.className='inline-bubble-input';
+    var inp=document.createElement('input');
+    inp.type='text';inp.placeholder=step.ph||'';
+    inp.value=ans[step.id]||'';
+    var send=document.createElement('button');send.className='inline-send';send.disabled=true;
+    send.innerHTML='<svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
+    inputWrap.appendChild(inp);inputWrap.appendChild(send);
+    bubble.appendChild(inputWrap);
+
+    // 提示文字
+    var hint=document.createElement('div');hint.className='inline-hint';
+    bubble.appendChild(hint);
+
+    row.appendChild(av);row.appendChild(bubble);
+    chat.appendChild(row);scrollBottom();
+    setTimeout(function(){inp.focus();},80);
+
+    // 驗證
+    function parseBirthday(raw){
+      var s=raw.trim().replace(/[-\.]/g,'/');
+      var parts=s.split('/');
+      if(parts.length!==3)return null;
+      var y=parseInt(parts[0],10),m=parseInt(parts[1],10),d=parseInt(parts[2],10);
+      if(isNaN(y)||isNaN(m)||isNaN(d))return null;
+      var isMinguo=y<=120;
+      var wy=isMinguo?y+1911:y;
+      if(wy<1900||wy>2025||m<1||m>12||d<1||d>31)return null;
+      return{display:wy+'/'+String(m).padStart(2,'0')+'/'+String(d).padStart(2,'0'),minguo:isMinguo};
+    }
+
+    function validate(){
+      var v=inp.value.trim();
+      if(!v){send.disabled=true;hint.textContent='';hint.style.color='';return;}
+      if(step.type==='text'&&step.id==='name'&&/^\d+$/.test(v)){
+        send.disabled=true;hint.style.color='#8F2E1C';hint.textContent='請輸入您的真實姓名';return;
+      }
+      if(step.type==='birthday'){
+        var p=parseBirthday(v);
+        if(!p){send.disabled=true;hint.style.color='#8F2E1C';hint.textContent='看起來格式不太對，試試 1990/05/20 這樣的寫法';return;}
+        if(p.minguo){hint.style.color='var(--accent)';hint.textContent='已為您換算成西元 '+p.display+'，看起來對嗎？';}
+        else{hint.textContent='';}
+        send.disabled=false;send._parsed=p;return;
+      }
+      send.disabled=false;hint.textContent='';
+    }
+    validate();
+    inp.addEventListener('input',validate);
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter'&&!send.disabled)send.click();});
+
+
+    // 把 inline-bubble 替換成普通系統泡泡
+    function convertToSysBubble(){
+      var newRow=document.createElement('div');newRow.className='msg-row sys';
+      newRow.setAttribute('data-step',step.id);
+      newRow.innerHTML='<div class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-3"/><path d="M9 12h6"/><path d="M9 16h4"/><path d="M9 8h6"/></svg></div><div class="bubble">'+step.q+'</div>';
+      row.parentNode.replaceChild(newRow,row);
+    }
+
+    send.addEventListener('click',function(){
+      if(send.disabled)return;
+      if(step.type==='birthday'){
+        var p=send._parsed;if(!p)return;
+        if(p.minguo){
+          convertToSysBubble();
+          usrBubble(inp.value.trim(),step.id);
+          sysBubble('已為您將民國年換算成西元 <b>'+p.display+'</b>，請問這是您的生日嗎？',440,function(){
+            var cb=document.createElement('div');cb.className='opts-block';cb.setAttribute('data-step',step.id);
+            var yes=document.createElement('button');yes.className='opt-btn';yes.textContent='是的，正確';
+            var no=document.createElement('button');no.className='opt-btn';no.textContent='不對，我要重新輸入';
+            yes.addEventListener('click',function(){
+              cb.remove();chat.querySelectorAll('.undo-btn').forEach(function(b){b.remove();});
+              ans[step.id]=p.display;ansVal[step.id]=p.display;
+              usrBubble('對，就是這天',step.id);
+              stepIndex=si+1;updateProg();
+              safeTimeout(function(){askStep(si+1);},320);
+            });
+            no.addEventListener('click',function(){
+              cb.remove();
+              chat.querySelectorAll('[data-step="'+step.id+'"]').forEach(function(el){el.remove();});
+              chat.querySelectorAll('.undo-btn').forEach(function(b){b.remove();});
+              delete ans[step.id];delete ansVal[step.id];
+              safeTimeout(function(){askStep(si);},100);
+            });
+            cb.appendChild(yes);cb.appendChild(no);chat.appendChild(cb);scrollBottom();
+          });
+          return;
+        }
+        convertToSysBubble();
+        submitAns(step,si,p.display,p.display,null,null);
+        return;
+      }
+      var v=inp.value.trim();
+      convertToSysBubble();
+      submitAns(step,si,v,v,null,null);
+    });
+  },480);
+}
+
+/* ── 渲染輸入 ── */
+function renderInput(step,si){
+  var type=step.type;
+
+  /* 文字輸入 */
+  if(type==='text'||type==='birthday'){
+    var row=document.createElement('div');row.className='input-row';
+    row.setAttribute('data-step',step.id);
+    var inp=document.createElement('input');
+    inp.type='text';inp.placeholder=step.ph||'';
+    inp.value=ans[step.id]||'';
+    var send=document.createElement('button');send.className='send-btn';send.disabled=true;
+    send.innerHTML='<svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
+    var hint=document.createElement('div');hint.className='input-hint';hint.setAttribute('data-step',step.id);
+
+    function parseBirthday(raw){
+      var s=raw.trim().replace(/[-\.]/g,'/');
+      var parts=s.split('/');
+      if(parts.length!==3)return null;
+      var y=parseInt(parts[0],10),m=parseInt(parts[1],10),d=parseInt(parts[2],10);
+      if(isNaN(y)||isNaN(m)||isNaN(d))return null;
+      var isMinguo=y<=120;
+      var wy=isMinguo?y+1911:y;
+      if(wy<1900||wy>2025||m<1||m>12||d<1||d>31)return null;
+      return{display:wy+'/'+String(m).padStart(2,'0')+'/'+String(d).padStart(2,'0'),minguo:isMinguo};
+    }
+
+    function validate(){
+      var v=inp.value.trim();
+      if(!v){send.disabled=true;hint.textContent='';hint.style.color='';return;}
+      if(type==='text'&&step.id==='name'&&/^\d+$/.test(v)){
+        send.disabled=true;hint.style.color='var(--severe)';hint.textContent='請輸入您的真實姓名';return;
+      }
+      if(type==='birthday'){
+        var p=parseBirthday(v);
+        if(!p){send.disabled=true;hint.style.color='var(--severe)';hint.textContent='看起來格式不太對，試試 1990/05/20 這樣的寫法';return;}
+        if(p.minguo){hint.style.color='var(--accent)';hint.textContent='已為您換算成西元 '+p.display+'，看起來對嗎？';}
+        else{hint.textContent='';}
+        send.disabled=false;send._parsed=p;return;
+      }
+      send.disabled=false;hint.textContent='';
+    }
+    validate();
+    inp.addEventListener('input',validate);
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter'&&!send.disabled)send.click();});
+
+    send.addEventListener('click',function(){
+      if(send.disabled)return;
+      if(type==='birthday'){
+        var p=send._parsed;
+        if(!p)return;
+        if(p.minguo){
+          // 清掉輸入列
+          row.remove();hint.remove();
+          usrBubble(inp.value.trim(),step.id);
+          // 系統確認
+          sysBubble('已為您將民國年換算成西元 <b>'+p.display+'</b>，請問這是您的生日嗎？',440,function(){
+            var cb=document.createElement('div');cb.className='opts-block';cb.setAttribute('data-step',step.id);
+            var yes=document.createElement('button');yes.className='opt-btn';yes.textContent='是的，正確';
+            var no=document.createElement('button');no.className='opt-btn';no.textContent='不對，我要重新輸入';
+            yes.addEventListener('click',function(){
+              cb.remove();
+              chat.querySelectorAll('.undo-btn').forEach(function(b){b.remove();});
+              ans[step.id]=p.display;ansVal[step.id]=p.display;
+              if(step.id==='name')NAME=p.display;
+              usrBubble('對，就是這天',step.id);
+              stepIndex=si+1;updateProg();
+              safeTimeout(function(){askStep(si+1);},320);
+            });
+            no.addEventListener('click',function(){
+              cb.remove();
+              chat.querySelectorAll('[data-step="'+step.id+'"]').forEach(function(el){el.remove();});
+              chat.querySelectorAll('.undo-btn').forEach(function(b){b.remove();});
+              delete ans[step.id];delete ansVal[step.id];
+              safeTimeout(function(){askStep(si);},100);
+            });
+            cb.appendChild(yes);cb.appendChild(no);chat.appendChild(cb);scrollBottom();
+          });
+          return;
+        }
+        // 西元直接送
+        submitAns(step,si,p.display,p.display,row,hint);
+        return;
+      }
+      var v=inp.value.trim();
+      submitAns(step,si,v,v,row,hint);
+    });
+
+    row.appendChild(inp);row.appendChild(send);
+    chat.appendChild(row);chat.appendChild(hint);
+    scrollBottom();
+    setTimeout(function(){inp.focus();},80);
+    return;
+  }
+
+  /* 單選選項 */
+  if(type==='choice'){
+    var block=document.createElement('div');
+    block.className='opts-block'+(step.g2?' g2':'');
+    block.setAttribute('data-step',step.id);
+    step.opts.forEach(function(opt){
+      var btn=document.createElement('button');btn.className='opt-btn';btn.textContent=opt;
+      btn.addEventListener('click',function(){
+        block.remove();submitAns(step,si,opt,opt,null,null);
+      });
+      block.appendChild(btn);
+    });
+    chat.appendChild(block);scrollBottom();
+    return;
+  }
+
+  /* 量表 */
+  if(type==='scale'){
+    var sb=document.createElement('div');sb.className='scale-block';sb.setAttribute('data-step',step.id);
+    step.c.forEach(function(col,i){
+      var btn=document.createElement('button');btn.className='scale-btn';
+      var num=document.createElement('span');num.className='scale-num';num.textContent=i+1;
+      var label=document.createElement('span');label.textContent=col.t;
+      btn.appendChild(num);btn.appendChild(label);
+      btn.addEventListener('click',function(){
+        sb.remove();submitAns(step,si,col.t,col.v,null,null);
+      });
+      sb.appendChild(btn);
+    });
+    chat.appendChild(sb);scrollBottom();
+    return;
+  }
+
+  /* 單位選擇 */
+  if(type==='unit'){
+    renderUnitCats(step,si);
+    return;
+  }
+
+  /* 滿意度 */
+  if(type==='rating'){
+    var rb=document.createElement('div');rb.className='rating-block';rb.setAttribute('data-step',step.id);
+    var rrow=document.createElement('div');rrow.className='rating-row';
+    for(var i=1;i<=5;i++){(function(n){
+      var btn=document.createElement('button');btn.className='rating-btn';btn.textContent=n;
+      btn.addEventListener('click',function(){
+        rb.remove();submitAns(step,si,n+' / 5',n,null,null);
+      });
+      rrow.appendChild(btn);
+    })(i);}
+    var rlb=document.createElement('div');rlb.className='rating-labels';
+    rlb.innerHTML='<span>非常不滿意</span><span>非常滿意</span>';
+    rb.appendChild(rrow);rb.appendChild(rlb);
+    chat.appendChild(rb);scrollBottom();
+    return;
+  }
+}
+
+/* ── 單位選擇器 ── */
+function renderUnitCats(step,si){
+  var grid=document.createElement('div');grid.className='unit-cats';grid.setAttribute('data-step',step.id);
+  Object.keys(unitGroups).forEach(function(cat){
+    var g=unitGroups[cat];
+    var btn=document.createElement('button');btn.className='unit-cat-btn';
+    btn.innerHTML=g.svg+'<span>'+cat+'</span>';
+    btn.addEventListener('click',function(){grid.remove();renderUnitSubs(step,si,cat);});
+    grid.appendChild(btn);
+  });
+  chat.appendChild(grid);scrollBottom();
+}
+
+function renderUnitSubs(step,si,cat){
+  var wrap=document.createElement('div');wrap.className='unit-subs';wrap.setAttribute('data-step',step.id);
+  var back=document.createElement('button');back.className='unit-back';
+  back.innerHTML='<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>'+cat;
+  back.addEventListener('click',function(){wrap.remove();renderUnitCats(step,si);});
+  var subGrid=document.createElement('div');subGrid.className='unit-sub-grid';
+  unitGroups[cat].items.forEach(function(u){
+    var label=u.replace(/^\d+\./,'');
+    var btn=document.createElement('button');btn.className='opt-btn';
+    btn.style.fontSize='13px';btn.style.borderRadius='20px';btn.textContent=label;
+    btn.addEventListener('click',function(){wrap.remove();submitAns(step,si,label,u,null,null);});
+    subGrid.appendChild(btn);
+  });
+  wrap.appendChild(back);wrap.appendChild(subGrid);
+  chat.appendChild(wrap);scrollBottom();
+}
+
+/* ── 送出答案 ── */
+function submitAns(step,si,display,value,rowEl,hintEl){
+  if(rowEl)rowEl.remove();
+  if(hintEl)hintEl.remove();
+  ans[step.id]=display;
+  ansVal[step.id]=value;
+  if(step.id==='name')NAME=display;
+  usrBubble(display,step.id);
+  stepIndex=si+1;
+  updateProg();
+  safeTimeout(function(){askStep(si+1);},340);
+}
+
+/* ── 結果 ── */
+function bandOf(s,lo,hi){return s<lo?'low':s<hi?'mid':'high';}
+var bMeta={low:{l:'輕微',c:'#2D5F45',cd:'#52916E'},mid:{l:'中度',c:'#8A6520',cd:'#B8933A'},high:{l:'嚴重',c:'#8F2E1C',cd:'#C0604A'}};
+var pDesc={low:'個人過勞程度輕微，不常感到疲勞或精疲力竭。',mid:'個人過勞中等，有時感到精疲力竭，建議增加休息時間。',high:'個人過勞嚴重，時常精疲力竭，建議尋求專業諮詢。'};
+var wDesc={low:'工作過勞輕微，工作並不常讓你感覺心力交瘁。',mid:'工作過勞中等，有時對工作感到沒力或挫折。',high:'工作過勞嚴重，建議調整工作節奏並尋求諮詢。'};
+
+function showResult(){
+  chat.querySelectorAll('.undo-btn').forEach(function(b){b.remove();});
+  var pKeys=['p1','p2','p3','p4','p5','p6'];
+  var wKeys=['w1','w2','w3','w4','w5','w6','w7'];
+  var ps=Math.round(pKeys.reduce(function(s,k){return s+(ansVal[k]||0);},0)/6);
+  var ws=Math.round(wKeys.reduce(function(s,k){return s+(ansVal[k]||0);},0)/7);
+  var pb=bandOf(ps,50,70),wb=bandOf(ws,45,60);
+  var pbm=bMeta[pb],wbm=bMeta[wb];
+  progFill.style.width='100%';
+  progLabel.textContent='完成 ✓';
+
+  var greeting=NAME?'謝謝 '+NAME+' 填寫本問卷！':'感謝您填寫本問卷！';
+  sysBubble(greeting+'以下是你的評估結果 👇',480,function(){
+    // 偵測深色模式取對應色
+    var dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
+    var pc=dark?pbm.cd:pbm.c, wc=dark?wbm.cd:wbm.c;
+    var card=document.createElement('div');card.className='result-card';
+    var sg=document.createElement('div');sg.className='score-grid';
+    // 個人
+    var c1=document.createElement('div');c1.className='score-cell';
+    c1.innerHTML='<div class="score-lbl">個人相關過勞</div>';
+    var n1=document.createElement('div');n1.className='score-num';n1.style.color=pc;
+    n1.textContent=ps;var u1=document.createElement('span');u1.style.cssText='font-size:13px;color:#68706A';u1.textContent=' 分';n1.appendChild(u1);
+    var b1=document.createElement('div');b1.className='score-band';b1.style.color=pc;b1.style.borderColor=pc;b1.textContent=pbm.l;
+    c1.appendChild(n1);c1.appendChild(b1);
+    // 工作
+    var c2=document.createElement('div');c2.className='score-cell';
+    c2.innerHTML='<div class="score-lbl">工作相關過勞</div>';
+    var n2=document.createElement('div');n2.className='score-num';n2.style.color=wc;
+    n2.textContent=ws;var u2=document.createElement('span');u2.style.cssText='font-size:13px;color:#68706A';u2.textContent=' 分';n2.appendChild(u2);
+    var b2=document.createElement('div');b2.className='score-band';b2.style.color=wc;b2.style.borderColor=wc;b2.textContent=wbm.l;
+    c2.appendChild(n2);c2.appendChild(b2);
+    sg.appendChild(c1);sg.appendChild(c2);
+    var div=document.createElement('div');div.className='score-divider';
+    var d1=document.createElement('div');d1.className='score-desc';d1.textContent=pDesc[pb];
+    var d2=document.createElement('div');d2.className='score-desc';d2.textContent=wDesc[wb];
+    card.appendChild(sg);card.appendChild(div);card.appendChild(d1);card.appendChild(d2);
+    // 用 result-wrap 包 avatar + card，跟系統泡泡排版一致
+    var rw=document.createElement('div');rw.className='result-wrap';
+    var rav=document.createElement('div');rav.className='avatar';
+    rav.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-3"/><path d="M9 12h6"/><path d="M9 16h4"/><path d="M9 8h6"/></svg>';
+    rw.appendChild(rav);rw.appendChild(card);
+    chat.appendChild(rw);scrollBottom();
+
+    safeTimeout(function(){
+      sysBubble('若您想重新填寫，請點選下方按鈕。',480,function(){
+        var rb=document.createElement('div');rb.className='opts-block';
+        var btn=document.createElement('button');btn.className='opt-btn';btn.textContent='重新填寫';
+        btn.style.textAlign='center';
+        btn.addEventListener('click',function(){
+          clearAllTimers();
+          ans={};ansVal={};stepIndex=0;NAME='';unitCat=null;
+          chat.innerHTML='';updateProg();
+          safeTimeout(function(){
+            sysBubble('您好！我是過勞評估小幫手，接下來會請您回答幾個問題，大約 3 分鐘即可完成。',500,function(){
+              safeTimeout(function(){askStep(0);},200);
+            });
+          },80);
+        });
+        rb.appendChild(btn);chat.appendChild(rb);scrollBottom();
+      });
+    },600);
+  });
+}
+
+/* ── 啟動 ── */
+updateProg();
+sysBubble('您好！我是過勞評估小幫手，接下來會請您回答幾個問題，大約 3 分鐘即可完成。',500,function(){
+  safeTimeout(function(){askStep(0);},200);
+});
+
+})();
+</script>
+</body>
+</html>
