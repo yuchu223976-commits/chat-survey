@@ -178,22 +178,24 @@ button,input{letter-spacing:inherit;}
 
 /* 滿意度 */
 .rating-block{
-  margin:8px 0 12px 36px;
-  display:flex;flex-direction:column;gap:8px;
+  margin:8px 0 12px 36px;max-width:360px;
+  display:flex;flex-direction:column;gap:12px;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-m);
+  padding:16px;
   animation:fadeUp 280ms cubic-bezier(.16,1,.3,1);
 }
-.rating-row{display:flex;gap:8px;}
+.rating-row{display:flex;justify-content:space-between;gap:8px;}
 .rating-btn{
-  flex:1;aspect-ratio:1;
-  font-family:inherit;font-size:16px;font-weight:700;
+  flex:none;width:48px;height:48px;padding:0;
+  font-family:inherit;font-size:18px;font-weight:700;line-height:1;letter-spacing:0;
   color:var(--ink);background:var(--surface);
-  border:1px solid var(--line-strong);border-radius:var(--radius-sm);cursor:pointer;
+  border:1px solid var(--line-strong);border-radius:50%;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   transition:border-color 120ms,background 120ms,color 120ms,transform 80ms;
 }
-.rating-btn:active{transform:scale(.95);}
+.rating-btn:active{transform:scale(.92);background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
 .rating-btn:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);}
-.rating-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);letter-spacing:0;}
+.rating-labels{display:flex;justify-content:space-between;gap:8px;font-size:14px;line-height:1.5;color:var(--muted);letter-spacing:0;}
 
 /* 結果卡 */
 .result-wrap{
@@ -241,7 +243,7 @@ button,input{letter-spacing:inherit;}
   transition:border-color 120ms,background 120ms,color 120ms;
 }
 .unit-cat-btn:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);}
-.unit-cat-btn svg{width:24px;height:24px;stroke:var(--accent);stroke-width:1.8;fill:none;}
+.unit-cat-btn svg{width:24px;height:24px;stroke:var(--accent);stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round;}
 .unit-subs{
   margin:0 0 12px 36px;
   display:flex;flex-direction:column;gap:0;
@@ -332,7 +334,7 @@ button,input{letter-spacing:inherit;}
 var unitGroups={
   '醫師 / 護理':{svg:'<svg viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>',items:["1.醫師(為恭)","2.醫師(宏仁)","3.護理部","4.護理部7F病房護理站","5.護理部7F產房護理站","6.護理部7F嬰兒室","7.護理部8F病房護理站","8.護理部9F病房護理站","9.護理部10F病房護理站","10.護理部11F病房護理站","11.護理部12F病房護理站","12.護理部15F病房護理站","13.護理部精神科一病房護理站","14.護理部精神科二病房護理站","15.護理部精神科三病房護理站","16.護理部精神科七病房護理站","17.護理部精神科八病房護理站","18.護理部日間病房","19.護理部手術室","20.護理部加護病房護理站","21.護理部急診室","22.護理部門診","23.護理部供應室","24.護理部專科護理師內科組","25.護理部專科護理師手術室組","26.護理部專科護理師外科組","27.護理部專科護理師兒科組","28.護理部專科護理師急診組","29.護理部專科護理師重症加護科組","30.護理部專科護理師婦產科組","31.護理部專科護理師精神科組"]},
   '社區 / 長照':{svg:'<svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',items:["32.社區醫學部","33.社區健康科","34.個案管理科","35.長期照護科","36.居家護理所","37.護理之家","60.社區精神科"]},
-  '醫技 / 治療':{svg:'<svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v11m0 0H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-4m-6 0h6"/></svg>',items:["38.健檢中心一般健檢組","39.健檢中心外勞健檢組","40.腎臟內科","41.麻醉科護理組","42.生理檢查室","43.呼吸治療科","44.感染管制室","45.藥劑部","46.檢驗部","47.心臟內科心導管室","48.放射診斷科","49.放射腫瘤科","50.社會工作室","51.東興社會工作科","52.泌尿科碎石室","53.高壓氧治療中心","54.復健科","55.解剖病理科","56.營養科","57.臨床心理科","58.職能治療科","59.職能治療科庇護工場","76.急診部"]},
+  '醫技 / 治療':{svg:'<svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',items:["38.健檢中心一般健檢組","39.健檢中心外勞健檢組","40.腎臟內科","41.麻醉科護理組","42.生理檢查室","43.呼吸治療科","44.感染管制室","45.藥劑部","46.檢驗部","47.心臟內科心導管室","48.放射診斷科","49.放射腫瘤科","50.社會工作室","51.東興社會工作科","52.泌尿科碎石室","53.高壓氧治療中心","54.復健科","55.解剖病理科","56.營養科","57.臨床心理科","58.職能治療科","59.職能治療科庇護工場","76.急診部"]},
   '行政 / 管理':{svg:'<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>',items:["61.院長室","62.經營服務中心","63.財務室","64.資訊室","65.醫事室","66.保險申報課","67.病歷管理課","68.計價課","69.總務室","70.工務課","71.庶務課","72.職業安全衛生室","73.醫療品質部","74.教學研究組","75.人力資源室","77.精神醫療中心行政課"]},
   '宏仁診所':{svg:'<svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 12v6m-3-3h6"/></svg>',items:["78.宏仁診所放射組","79.宏仁診所門診","80.宏仁診所洗腎室","81.宏仁診所復健科","82.宏仁診所醫事組","83.宏仁診所藥局"]}
 };
