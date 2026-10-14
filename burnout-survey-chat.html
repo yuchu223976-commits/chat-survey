@@ -540,7 +540,7 @@ function inlineBubble(step,si){
     // 輸入列
     var inputWrap=document.createElement('div');inputWrap.className='inline-bubble-input';
     var inp=document.createElement('input');
-    inp.type='text';inp.placeholder=step.ph||'';
+    inp.type='text';inp.placeholder=step.ph||'';if(step.type==='birthday')inp.inputMode='numeric';
     inp.value=ans[step.id]||'';
     var send=document.createElement('button');send.className='inline-send';send.disabled=true;
     send.innerHTML='<svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
@@ -558,13 +558,23 @@ function inlineBubble(step,si){
     // 驗證
     function parseBirthday(raw){
       var s=raw.trim().replace(/[-\.]/g,'/');
-      var parts=s.split('/');
-      if(parts.length!==3)return null;
-      var y=parseInt(parts[0],10),m=parseInt(parts[1],10),d=parseInt(parts[2],10);
-      if(isNaN(y)||isNaN(m)||isNaN(d))return null;
-      var isMinguo=y<=120;
+      var y,m,d,isMinguo;
+      if(/^\d+$/.test(s)){
+        // 純數字：8 碼＝西元 YYYYMMDD；6～7 碼＝民國 YYMMDD / YYYMMDD
+        if(s.length===8){y=+s.slice(0,4);m=+s.slice(4,6);d=+s.slice(6,8);isMinguo=false;}
+        else if(s.length===6||s.length===7){y=+s.slice(0,s.length-4);m=+s.slice(-4,-2);d=+s.slice(-2);isMinguo=true;}
+        else return null;
+      }else{
+        var parts=s.split('/');
+        if(parts.length!==3)return null;
+        y=parseInt(parts[0],10);m=parseInt(parts[1],10);d=parseInt(parts[2],10);
+        if(isNaN(y)||isNaN(m)||isNaN(d))return null;
+        isMinguo=y<=120;
+      }
       var wy=isMinguo?y+1911:y;
-      if(wy<1900||wy>2025||m<1||m>12||d<1||d>31)return null;
+      if(wy<1900||wy>new Date().getFullYear()||m<1||m>12||d<1)return null;
+      var dt=new Date(wy,m-1,d);
+      if(dt.getFullYear()!==wy||dt.getMonth()!==m-1||dt.getDate()!==d)return null;
       return{display:wy+'/'+String(m).padStart(2,'0')+'/'+String(d).padStart(2,'0'),minguo:isMinguo};
     }
 
@@ -645,7 +655,7 @@ function renderInput(step,si){
     var row=document.createElement('div');row.className='input-row';
     row.setAttribute('data-step',step.id);
     var inp=document.createElement('input');
-    inp.type='text';inp.placeholder=step.ph||'';
+    inp.type='text';inp.placeholder=step.ph||'';if(step.type==='birthday')inp.inputMode='numeric';
     inp.value=ans[step.id]||'';
     var send=document.createElement('button');send.className='send-btn';send.disabled=true;
     send.innerHTML='<svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
@@ -653,13 +663,23 @@ function renderInput(step,si){
 
     function parseBirthday(raw){
       var s=raw.trim().replace(/[-\.]/g,'/');
-      var parts=s.split('/');
-      if(parts.length!==3)return null;
-      var y=parseInt(parts[0],10),m=parseInt(parts[1],10),d=parseInt(parts[2],10);
-      if(isNaN(y)||isNaN(m)||isNaN(d))return null;
-      var isMinguo=y<=120;
+      var y,m,d,isMinguo;
+      if(/^\d+$/.test(s)){
+        // 純數字：8 碼＝西元 YYYYMMDD；6～7 碼＝民國 YYMMDD / YYYMMDD
+        if(s.length===8){y=+s.slice(0,4);m=+s.slice(4,6);d=+s.slice(6,8);isMinguo=false;}
+        else if(s.length===6||s.length===7){y=+s.slice(0,s.length-4);m=+s.slice(-4,-2);d=+s.slice(-2);isMinguo=true;}
+        else return null;
+      }else{
+        var parts=s.split('/');
+        if(parts.length!==3)return null;
+        y=parseInt(parts[0],10);m=parseInt(parts[1],10);d=parseInt(parts[2],10);
+        if(isNaN(y)||isNaN(m)||isNaN(d))return null;
+        isMinguo=y<=120;
+      }
       var wy=isMinguo?y+1911:y;
-      if(wy<1900||wy>2025||m<1||m>12||d<1||d>31)return null;
+      if(wy<1900||wy>new Date().getFullYear()||m<1||m>12||d<1)return null;
+      var dt=new Date(wy,m-1,d);
+      if(dt.getFullYear()!==wy||dt.getMonth()!==m-1||dt.getDate()!==d)return null;
       return{display:wy+'/'+String(m).padStart(2,'0')+'/'+String(d).padStart(2,'0'),minguo:isMinguo};
     }
 
